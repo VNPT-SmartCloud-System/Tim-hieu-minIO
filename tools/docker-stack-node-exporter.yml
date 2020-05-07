@@ -1,0 +1,37 @@
+version: "3.7"
+services:
+  node-exporter:
+    image: prom/node-exporter:latest
+    ports:
+      - published: 9100
+        target: 9100
+        mode: host
+    volumes:
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - /proc:/host/proc:ro
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: [node.platform.os == linux]
+  
+  ca-advisor:
+    image: google/cadvisor:latest
+    ports:
+      - published: 8081
+        target: 8080
+        mode: host
+    volumes:
+      - /sys:/sys:ro
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: [node.platform.os == linux]

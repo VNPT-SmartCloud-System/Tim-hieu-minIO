@@ -87,9 +87,8 @@ docker stack deploy -c docker-stack.yml elk
 ![minIO_6](../images/minIO_6.png)
 
 ## 2. Cài đặt Fluentd để thu thập log từ stdout các Container (deploy trên Docker swarm)
-### 2.1. Trên host Swarm manager, (trong bài lab này là minIO 1), tạo file config cho fluentd. *Lưu ý phải thay đổi IP của elasticsearch vào trường `host`,`user` và `password` cho đúng với mô hình triển khai. Các thông tin khác giữ nguyên*
+### 2.1. Trên host Swarm manager, (trong bài lab này là minIO 1), tạo file config `fluentd.conf`. *Lưu ý phải thay đổi IP của elasticsearch vào trường `host`,`user` và `password` cho đúng với mô hình triển khai. Các thông tin khác giữ nguyên*
 ```sh
-cat << EOF > fluentd.conf
 <source>
   @type forward
   port 24224
@@ -130,14 +129,12 @@ cat << EOF > fluentd.conf
     @type stdout
   </store>
 </match>
-EOF
 ```
 
 *Lưu ý: các trường `<filter docker.*.*>` và `<match docker.*.*>`, fluentd sẽ chỉ thu thập các log có tag với format như vậy, các log ko có tag hoặc khác format bị loại bỏ.*
 
-### 2.2. Tạo file stack để khởi tạo service fluentd. Sử dụng mode global để khởi tạo trên mỗi node trong cụm cluster một container fluentd. *Lưu ý: do minIO đã có sẵn Private network nên fluentd container sẽ sử dụng luôn network này để kết nối với minIO cluster. Trong các mô hình triển khai khác thông tin về network cần thay đổi cho đúng với môi trường triển khai.*
+### 2.2. Tạo file `docker-stack.yml` để khởi tạo service fluentd. Sử dụng mode global để khởi tạo trên mỗi node trong cụm cluster một container fluentd. *Lưu ý: do minIO đã có sẵn Private network nên fluentd container sẽ sử dụng luôn network này để kết nối với minIO cluster. Trong các mô hình triển khai khác thông tin về network cần thay đổi cho đúng với môi trường triển khai.*
 ```sh
-cat << EOF > docker-stack.yml
 version: "3.7"
 services:
   fluentd-elasticsearch:
@@ -146,8 +143,20 @@ services:
       FLUENTD_CONF: 'fluent.conf'
       FLUENTD_HOSTNAME: '{{.Node.Hostname}}'
     ports:
-      - 24224:24224
-      - 24224:24224/udp
+      - published: 24224
+        target: 24224
+        mode: host
+      - published: 5140
+        target: 5140
+        mode: host
+      - published: 24224
+        target: 24224
+        mode: host
+        protocol: udp
+      - published: 5140
+        target: 5140
+        mode: host
+        protocol: udp
     user: root
     configs:
       - source: fluent-elasticsearch-conf.v1
@@ -168,7 +177,6 @@ networks:
 configs:
   fluent-elasticsearch-conf.v1:
     file: ./fluentd.conf
-EOF
 ```
 
 ### 2.3. Khởi tạo fluentd, với cấu hình trên, container fluentd sẽ được deploy trên tất cả các host thuộc Swarm có OS là linux

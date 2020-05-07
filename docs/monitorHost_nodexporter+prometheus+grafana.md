@@ -18,6 +18,27 @@ Giám sát tình trạng hoạt động của các host vật lý.
 ```sh
 docker run --restart=always -d --name node-exporter -p 9100:9100 prom/node-exporter
 ```
+hoặc có thể deploy node-exporter container bằng docker-swarm sử dụng file docker-stack.yml
+```sh
+version: "3.7"
+services:
+  node-exporter:
+    image: prom/node-exporter:latest
+    ports:
+      - published: 9100
+        target: 9100
+        mode: host
+    volumes:
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - /proc:/host/proc:ro
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: [node.platform.os == linux]
+```
 ### 1.2. Kiểm tra bằng cách truy cập `http://10.159.19.77:9100`
 ![minIO_15](../images/minIO_15.png)
 
@@ -39,10 +60,7 @@ docker run --restart=always -d --name node-exporter -p 9100:9100 prom/node-expor
       - targets: ['10.159.19.78:9100']
 ```
 
-### 2.3. Khởi tạo hoặc Restart lại container Prometheus (nếu đã có) để lấy cấu hình mới
-```sh
-docker run --restart=always -d --name prometheus -p 9090:9090 -v /root/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus --config.file=/etc/prometheus/prometheus.yml
-```
+### 2.3. Restart lại container Prometheus để lấy cấu hình mới
 
 ### 2.4. Kiểm tra bằng cách truy cập giao diện của Prometheus tại `http://10.159.19.84:9091`
 Vào "Status" -> "Service discovery", thấy xuất hiện các job của cAdvisor.

@@ -1435,7 +1435,7 @@
           "value": "10.159.19.81:80"
         },
         "datasource": "Prometheus",
-        "definition": "label_values({__name__=~\"node_load1|minio_disks_total\"}, instance)",
+        "definition": "label_values({__name__=~\"minio_disks_total\"}, instance)",
         "hide": 0,
         "includeAll": false,
         "index": -1,
@@ -1443,7 +1443,7 @@
         "multi": false,
         "name": "host",
         "options": [],
-        "query": "label_values({__name__=~\"node_load1|minio_disks_total\"}, instance)",
+        "query": "label_values({__name__=~\"minio_disks_total\"}, instance)",
         "refresh": 1,
         "regex": "/^[^ ][\\w\\W ]*[^ ]/",
         "skipUrlSync": false,
