@@ -27,6 +27,30 @@ docker run --restart=always -d \
 --name=cadvisor \
 google/cadvisor:latest
 ```
+hoặc có thể deploy cAdvisor container bằng docker-swarm sử dụng file docker-stack.yml
+```sh
+version: "3.7"
+services:
+  ca-advisor:
+    image: google/cadvisor:latest
+    ports:
+      - published: 8081
+        target: 8080
+        mode: host
+    volumes:
+      - /sys:/sys:ro
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: [node.platform.os == linux]
+```
+
 ### 1.2. Kiểm tra cAdvisor container bằng cách truy cập `http://10.159.19.77:8081`
 ![minIO_11](../images/minIO_11.png)
 
@@ -49,10 +73,7 @@ google/cadvisor:latest
       - targets: ['10.159.19.78:8081']
 ```
 
-### 2.3. Khởi tạo hoặc Restart lại container Prometheus (nếu đã có) để lấy cấu hình mới
-```sh
-docker run -d --name prometheus -p 9090:9090 -v /root/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus --config.file=/etc/prometheus/prometheus.yml
-```
+### 2.3. Restart lại container Prometheus để lấy cấu hình mới
 
 ### 2.4. Kiểm tra bằng cách truy cập giao diện của Prometheus tại `http://10.159.19.84:9091`
 Vào "Status" -> "Service discovery", thấy xuất hiện các job của cAdvisor.

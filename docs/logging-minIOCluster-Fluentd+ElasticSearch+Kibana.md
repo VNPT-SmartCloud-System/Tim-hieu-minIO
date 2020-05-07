@@ -143,8 +143,20 @@ services:
       FLUENTD_CONF: 'fluent.conf'
       FLUENTD_HOSTNAME: '{{.Node.Hostname}}'
     ports:
-      - 24224:24224
-      - 24224:24224/udp
+      - published: 24224
+        target: 24224
+        mode: host
+      - published: 5140
+        target: 5140
+        mode: host
+      - published: 24224
+        target: 24224
+        mode: host
+        protocol: udp
+      - published: 5140
+        target: 5140
+        mode: host
+        protocol: udp
     user: root
     configs:
       - source: fluent-elasticsearch-conf.v1
