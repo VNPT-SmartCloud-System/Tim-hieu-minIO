@@ -191,7 +191,33 @@ docker stack deploy -c docker-stack.yml logging
 docker run --restart=always -d --name minio-client --log-driver=fluentd --log-opt fluentd-address=10.159.19.77:24224 \
      --log-opt tag=docker.ci.gitea --env MINIO_SERVER_HOST="10.159.19.81" --env MINIO_SERVER_PORT_NUMBER="80" \
      --env MINIO_ALIAS="longlq" --env MINIO_SERVER_ACCESS_KEY="access_key" --env MINIO_SERVER_SECRET_KEY="secret_key" \
-     bitnami/minio-client admin trace minio 2>&1 > /dev/stdout
+     bitnami/minio-client:2020.4.2 admin trace minio 2>&1 > /dev/stdout
+```
+hoặc có thể deploy minIO Client bằng docker-swarm sử dụng file docker-stack.yml
+```sh
+version: '3.7'
+services:
+  eduelearning:
+    image: bitnami/minio-client:2020.4.2
+    environment:
+      MINIO_SERVER_HOST: "10.159.19.81"
+      MINIO_SERVER_PORT_NUMBER: "80"
+      MINIO_ALIAS: "longlq"
+      MINIO_SERVER_ACCESS_KEY: "access_key"
+      MINIO_SERVER_SECRET_KEY: "secret_key"
+    command: admin trace minio 2>&1 > /dev/stdout
+    logging:
+      driver: fluentd
+      options:
+        tag: docker.ci.gitea
+        fluentd-async-connect: "true"
+        fluentd-address: "10.159.19.77:24224"
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == minio01
 ```
 
  - *longlq*: alias đặt cho cluster, sử dụng cho các thao tác sau với mc.
