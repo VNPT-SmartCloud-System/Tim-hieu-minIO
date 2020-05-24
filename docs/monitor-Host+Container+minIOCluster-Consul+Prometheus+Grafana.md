@@ -220,8 +220,34 @@ node_exporter
 ### 5.6. Khởi động lại Prometheus, kiểm tra trên dashboard của Prometheus thấy xuất hiện các Service discovery từ Consul
 ![minIO_18](../images/minIO_18.png)
 
+### 5.7. Đăng ký Service mới để Consul discover
+Trên host Consul server, tạo file `minio_register.json` tại thư mục `/etc/consul.d` với nội dung
+{
+  "ID": "minio-dev",
+  "Name": "minio",
+  "Tags": ["minio", "prometheus"],
+  "Address": "10.159.19.77",
+  "Port": 9005,
+  "Meta": {
+    "minio_version": "minio:RELEASE.2020-01-16T22-40-29Z"
+  }
+}
+
+Trên host Consul server, đăng ký service mới thông qua REST-ful API
+```sh
+curl \
+    --request PUT \
+    --data @minio_register.json \
+    http://127.0.0.1:8500/v1/agent/service/register?replace-existing-checks=true
+```
+
+Kiểm tra trên dashboard của Prometheus đã thấy xuất hiện service mới đăng ký
+![minIO_19](../images/minIO_19.png)
+
 
 # Tham khảo:
 - https://learn.hashicorp.com/consul/datacenter-deploy/deployment-guide
 - https://stuarthowlette.me.uk/posts/prometheus-consul-node_exporter/
 - https://www.robustperception.io/finding-consul-services-to-monitor-with-prometheus
+- https://www.consul.io/api/agent/service.html
+- https://www.consul.io/docs/commands/services/register.html
