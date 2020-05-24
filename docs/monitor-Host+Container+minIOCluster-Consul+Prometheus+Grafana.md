@@ -222,6 +222,7 @@ node_exporter
 
 ### 5.7. Đăng ký Service mới để Consul discover
 Trên host Consul server, tạo file `minio_register.json` tại thư mục `/etc/consul.d` với nội dung
+```sh
 {
   "ID": "minio-dev",
   "Name": "minio",
@@ -232,6 +233,7 @@ Trên host Consul server, tạo file `minio_register.json` tại thư mục `/et
     "minio_version": "minio:RELEASE.2020-01-16T22-40-29Z"
   }
 }
+```
 
 Trên host Consul server, đăng ký service mới thông qua REST-ful API
 ```sh
